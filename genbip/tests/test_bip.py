@@ -63,6 +63,29 @@ def test_instantiation_from_sequences():
     assert from_seq_bip.min_bot_deg == 2
     assert from_seq_bip.is_multigraph
 
+def test_update_from_vectors():
+    """
+    Update the top and bot vector with the exact same ones as bip already has.
+    The resulting bip should be exactly the same.
+    """
+    test_bip = bip.from_sequences([2,1,3,2],[2,2,2,2], ["a","b","c","d"], ["alpha", "beta", "gamma", "delta"])
+    test_bip.update_from_vectors(test_bip.top_vector, test_bip.bot_vector)
+    assert test_bip.top_degree == [2,1,3,2]
+    assert test_bip.bot_degree == [2,2,2,2]
+    assert test_bip.top_index == [0,2,3,6]
+    assert test_bip.top_vector == [0,0,1,2,2,2,3,3]
+    assert test_bip.bot_vector == [0,0,1,1,2,2,3,3]
+    assert test_bip.top_names == ["a","b","c","d"]
+    assert test_bip.bot_names == ["alpha","beta","gamma","delta"]
+    assert test_bip.small
+    assert test_bip.n_top == 4
+    assert test_bip.n_bot == 4
+    assert test_bip.m == 8
+    assert test_bip.max_top_deg == 3
+    assert test_bip.min_top_deg == 1
+    assert test_bip.max_bot_deg == 2
+    assert test_bip.min_bot_deg == 2
+    assert test_bip.is_multigraph
 
 def test_instantiation_from_only_ones_sequences():
     from_seq_bip = bip.from_sequences([1,1,1,1],[1,1,1,1], ["a","b","c","d"], ["alpha", "beta", "gamma", "delta"])
