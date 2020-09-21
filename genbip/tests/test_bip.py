@@ -1,4 +1,9 @@
+
+import os
+
 from ..bip import bip
+
+current_directory = os.path.realpath(os.path.dirname(__file__))
 
 def test_raw_instantiation():
     test_bip = bip("","",[1,3,2,4],[2,4,1,1,2],["a","b","c","d"],["1","2","3","4","5"])
@@ -22,9 +27,11 @@ def test_raw_instantiation():
     assert test_bip.is_multigraph
 
 def test_instantiation_from_files_toy_1():
-    toy1_bip = bip.from_files("./data/toy_1/toy_top.gz","./data/toy_1/toy_bot.gz")
-    assert toy1_bip.top_filename == "./data/toy_1/toy_top.gz"
-    assert toy1_bip.bot_filename == "./data/toy_1/toy_bot.gz"
+    top_file = os.path.join(current_directory,"data/toy_1/toy_top.gz")
+    bot_file = os.path.join(current_directory, "data/toy_1/toy_bot.gz")
+    toy1_bip = bip.from_files(top_file,bot_file)
+    assert toy1_bip.top_filename == top_file
+    assert toy1_bip.bot_filename == bot_file
     assert toy1_bip.top_degree == [2,1,3,2]
     assert toy1_bip.bot_degree == [2,2,2,2]
     assert toy1_bip.top_index == [0,2,3,6]
