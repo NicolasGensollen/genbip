@@ -164,6 +164,38 @@ class bip:
     def is_bigraphic_gale_ryser(self):
         return is_bigraphic_gale_ryser(self.top_degree, self.bot_degree)
 
+    def top_neighbors(self, u):
+        return set(self.bot_vector[self.top_index[u]:self.top_index[u]+self.top_degree[u]])
+
+    def update_from_vectors(self, top_vector, bot_vector):
+        """
+        Update bip with the provided vectors.
+        This might modify the degree distributions.
+        """
+        val = -1
+        top_degree = []
+        top_index = []
+        for i,tv in enumerate(top_vector):
+            if tv == val:
+                top_degree[-1] += 1
+            else:
+                val += 1
+                top_index.append(i)
+                top_degree.append(1) 
+        bot_degree = []
+        val = -1
+        for bv in bot_vector:
+            if bv == val:
+                bot_degree[-1] += 1
+            else:
+                val += 1
+                bot_degree.append(1) 
+        self.top_degree = top_degree
+        self.bot_degree = bot_degree
+        self.top_index = top_index
+        self.top_vector = top_vector
+        self.bot_vector = bot_vector
+
     def swap(self, i, j):
         """Swap """
         self.bot_vector[i],self.bot_vector[j] = self.bot_vector[j],self.bot_vector[i]
