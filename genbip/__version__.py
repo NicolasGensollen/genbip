@@ -1,0 +1,7 @@
+__author__ = "NicolasGensollen"
+__author_email__ = "nicolas.gensollen@gmail.com"
+__description__ = "Bi-partite graph generation."
+__license__ = "BSD"
+__title__ = "GenBip"
+__url__ = "https://github.com/NicolasGensollen/genbip"
+__version__ = "0.0.1"
