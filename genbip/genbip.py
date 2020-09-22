@@ -16,7 +16,7 @@ class AbstractGenBip:
         if seed is not None:
             self.seed = seed
             random.seed(self.seed)
-    
+
     @property
     def is_seeded(self):
         return not self.seed is None
@@ -52,4 +52,20 @@ class GenBipPrunedConfiguration(AbstractGenBip):
             new_bot.extend(neighbors)
         bip.update_from_vectors(new_top,new_bot)
 
+class GenBipRepeatedConfigurationWhole(AbstractGenBip):
+    """
 
+    """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def run(self, bip):
+        random.shuffle(bip.bot_vector)
+        i = 1
+        while bip.is_multigraph:
+            random.shuffle(bip.bot_vector)
+            i += 1
+            if bip.verbose:
+                print(f"{i}")
+        if bip.verbose:
+            print(f"genbip_repeated_configuration_whole: {i} global shufflings performed\n")
