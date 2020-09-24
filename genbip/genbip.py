@@ -80,6 +80,8 @@ class GenBipRepeatedConfigurationAsap(AbstractGenBip):
         super().__init__(**kwargs)
 
     def run(self, bip):
+        # Re-order top nodes by decreasing degree
+        bip.reorder_top_decreasing_degree()
         neighbors_array = np.zeros(bip.n_bot, dtype=np.int64)
         rounds = 0
         multi = True
@@ -131,3 +133,38 @@ class GenBipCorrectedConfiguration(AbstractGenBip):
                 print(f"{swaps} swaps")
         if bip.verbose:
             print(f"swaps at each round\ngenbip_corrected_configuration: {rounds} rounds, {nswaps} swaps total\n")
+
+class GenBipHavelHakimi(AbstractGenBip):
+    """
+
+    """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def run(self, bip):
+        # Re-order top nodes by decreasing degree
+        bip.reorder_top_decreasing_degree()
+        # Re-order bot nodes by decreasing degree
+        bip.reorder_bot_decreasing_degree()
+        sorted_bot = np.flip(np.arange(bip.n_bot))
+        d = 0
+        bot_deg_pos = -1 * np.ones(bip.max_bot_deg+1, dtype=np.int64)
+        for v in range(bip.n_bot):
+            bot_deg_pos[bip.bot_degree[v]] = bip.n_bot - 1 - v
+        for i in np.flip(np.arange(bip.max_bot_deg)):
+            if bot_deg_pos[i] < 0:
+                bot_deg_pos[i] = bot_deg_pos[i+1]
+
+        bot_deg = list(bip.bot_degree) # Local copy
+        i = 0
+        for u in range(bip.n_top):
+            bip.top_index[u] = i
+            for j in range(bip.n_bot - bip.top_degree[u], bip.n_bot):
+                v = sorted_bot[j]
+                bip.top_vector[i],bip.bot_vector[i] = u,v
+                i += 1
+                sorted_bot[j] = sorted_bot[bot_deg_pos[bot_deg[v]]]
+                sorted_bot[bot_deg_pos[bot_deg[v]]] = v
+                bot_deg_pos[bot_deg[v]] += 1
+                bot_deg[v] -= 1
+
