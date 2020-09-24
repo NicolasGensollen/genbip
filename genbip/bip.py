@@ -3,7 +3,7 @@ import gzip
 import random
 import numpy as np
 
-from .utils import is_bigraphic_gale_ryser
+from genbip.utils import is_bigraphic_gale_ryser
 
 SMALL_SIZE = 100
 
