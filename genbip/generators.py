@@ -1,7 +1,7 @@
 
 import random
 import numpy as np
-from .bip import bip
+from genbip.bip import bip
 
 class AbstractGenBip:
     """
