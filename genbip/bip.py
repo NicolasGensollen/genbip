@@ -1,6 +1,7 @@
 
 import gzip
 import random
+import numpy as np
 
 from .utils import is_bigraphic_gale_ryser
 
@@ -23,8 +24,8 @@ class bip:
         if len(bot_degree) != len(bot_names):
             raise ValueError("Bot degree and bot names should have the same length.")
 
-        self.top_degree = top_degree
-        self.bot_degree = bot_degree
+        self.top_degree = np.array(top_degree, dtype=np.int64)
+        self.bot_degree = np.array(bot_degree, dtype=np.int64)
 
         # Labels
         self.top_names = top_names
@@ -37,11 +38,11 @@ class bip:
             raise ValueError("Size of bot degree is <= 0.")
 
         # Check that all top degree values are larger than 0 and less than the number of bottom nodes
-        if not all(d > 0 and d <= self.n_bot for d in self.top_degree):
+        if not np.all((0 < self.top_degree) & (self.top_degree <= self.n_bot)):
             raise ValueError("Not all top degree values are larger than 0 or less than the number of bottom nodes.")
 
         # Same check for bot degree values
-        if not all(d > 0 and d <= self.n_top for d in self.bot_degree):
+        if not np.all((0 < self.bot_degree) & (self.bot_degree <= self.n_top)):
             raise ValueError("Not all bot degree values are larger than 0 or less than the number of top nodes.")
 
         # Check that the degree sequences are bigraphic
@@ -67,11 +68,11 @@ class bip:
 
         # Size = sum of top degrees
         # top_index[i] is the index in top_vector at which
-        self.top_index = [0] * self.n_top
+        self.top_index = np.zeros(self.n_top, dtype=np.int64)
 
         # top_vector[i] = j means that
-        self.top_vector = [0] * self.m
-        self.bot_vector = [0] * self.m
+        self.top_vector = np.zeros(self.m, dtype=np.int64)
+        self.bot_vector = np.zeros(self.m, dtype=np.int64)
 
         i = 0
         for v in range(self.n_top):
@@ -111,11 +112,11 @@ class bip:
 
     @property
     def n_top(self):
-        return len(self.top_degree)
+        return self.top_degree.shape[0]
 
     @property
     def n_bot(self):
-        return len(self.bot_degree)
+        return self.bot_degree.shape[0]
 
     @property
     def m(self):
@@ -151,7 +152,7 @@ class bip:
 
     @property
     def is_multigraph(self):
-        neighbors_array = [0] * self.n_bot
+        neighbors_array = np.zeros(self.n_bot, dtype=np.int64)
         for u in range(self.n_top):
             for i in range(self.top_index[u], self.top_index[u]+self.top_degree[u]):
                 v = self.bot_vector[i]
@@ -191,11 +192,11 @@ class bip:
             else:
                 val += 1
                 bot_degree.append(1)
-        self.top_degree = top_degree
-        self.bot_degree = bot_degree
-        self.top_index = top_index
-        self.top_vector = top_vector
-        self.bot_vector = bot_vector
+        self.top_degree = np.array(top_degree, dtype=np.int64)
+        self.bot_degree = np.array(bot_degree, dtype=np.int64)
+        self.top_index  = np.array(top_index,  dtype=np.int64)
+        self.top_vector = np.array(top_vector, dtype=np.int64)
+        self.bot_vector = np.array(bot_vector, dtype=np.int64)
 
     def swap(self, i, j):
         """Swap """

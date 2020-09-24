@@ -26,7 +26,7 @@ def linear_sort(sequence):
     return sorted
 
 def conjugate(seq):
-    resu = [0 for x in range(max(seq)+1)]
+    resu = np.zeros(max(seq)+1, dtype=np.int64)
     for x in seq:
         resu[x] += 1
     for i in range(len(resu)-2,-1,-1):
@@ -34,8 +34,7 @@ def conjugate(seq):
     return(resu)
 
 def is_bigraphic_gale_ryser(seq1, seq2):
-    a = np.sort(seq1)
-    a = np.flip(a)
+    a = np.flip(np.sort(seq1))
     b = np.sort(seq2)
     if sum(a) != sum(b):
         return False

@@ -1,5 +1,6 @@
 
 import random
+import numpy as np
 from .bip import bip
 
 class AbstractGenBip:
@@ -16,6 +17,7 @@ class AbstractGenBip:
         if seed is not None:
             self.seed = seed
             random.seed(self.seed)
+            np.random.seed(self.seed)
 
     @property
     def is_seeded(self):
@@ -33,7 +35,7 @@ class GenBipConfiguration(AbstractGenBip):
         super().__init__(**kwargs)
 
     def run(self, bip):
-        random.shuffle(bip.bot_vector)
+        np.random.shuffle(bip.bot_vector)
 
 class GenBipPrunedConfiguration(AbstractGenBip):
     """
@@ -44,7 +46,7 @@ class GenBipPrunedConfiguration(AbstractGenBip):
         super().__init__(**kwargs)
 
     def run(self, bip):
-        random.shuffle(bip.bot_vector)
+        np.random.shuffle(bip.bot_vector)
         new_top, new_bot = [],[]
         for u in range(bip.n_top):
             neighbors = bip.top_neighbors(u)
@@ -60,10 +62,10 @@ class GenBipRepeatedConfigurationWhole(AbstractGenBip):
         super().__init__(**kwargs)
 
     def run(self, bip):
-        random.shuffle(bip.bot_vector)
+        np.random.shuffle(bip.bot_vector)
         i = 1
         while bip.is_multigraph:
-            random.shuffle(bip.bot_vector)
+            np.random.shuffle(bip.bot_vector)
             i += 1
             if bip.verbose:
                 print(f"{i}")
@@ -78,7 +80,7 @@ class GenBipRepeatedConfigurationAsap(AbstractGenBip):
         super().__init__(**kwargs)
 
     def run(self, bip):
-        neighbors_array = [0] * bip.n_bot
+        neighbors_array = np.zeros(bip.n_bot, dtype=np.int64)
         rounds = 0
         multi = True
         while multi:
