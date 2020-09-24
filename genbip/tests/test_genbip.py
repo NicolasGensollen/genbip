@@ -1,6 +1,6 @@
 
-from ..bip import bip
-from ..genbip import GenBipConfiguration, GenBipPrunedConfiguration, GenBipRepeatedConfigurationWhole, GenBipRepeatedConfigurationAsap, GenBipCorrectedConfiguration, GenBipHavelHakimi
+from genbip.bip import bip
+from genbip.generators import GenBipConfiguration, GenBipPrunedConfiguration, GenBipRepeatedConfigurationWhole, GenBipRepeatedConfigurationAsap, GenBipCorrectedConfiguration, GenBipHavelHakimi
 
 def test_instantiation_genbip_configuration():
     genbip_conf = GenBipConfiguration()

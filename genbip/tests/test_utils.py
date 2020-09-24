@@ -1,4 +1,4 @@
-from ..utils import *
+from genbip.utils import *
 
 def test_linear_sort():
     assert linear_sort([3,1,2,6,4,5]) == [1,2,3,4,5,6]

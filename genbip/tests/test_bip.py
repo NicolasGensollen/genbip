@@ -1,7 +1,7 @@
 
 import os
 
-from ..bip import bip
+from genbip.bip import bip
 
 current_directory = os.path.realpath(os.path.dirname(__file__))
 
