@@ -103,3 +103,29 @@ class GenBipRepeatedConfigurationAsap(AbstractGenBip):
             if bip.verbose:
                 print(f"{rounds}")
         print(f"genbip_repeated_configuration_asap: {rounds} rounds\n")
+
+class GenBipCorrectedConfiguration(AbstractGenBip):
+    """
+
+    """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def run(self, bip):
+        rounds, nswaps, swaps = 0, 0, None
+        while swaps != 0:
+            swaps = 0
+            for u in range(bip.n_top):
+                neighbors = set()
+                for i in range(bip.top_degree[u]):
+                    v = bip.bot_vector[bip.top_index[u]+i]
+                    if v in neighbors:
+                        bip.random_swap(bip.top_index[u]+i)
+                        swaps += 1
+                    neighbors.add(v)
+            rounds += 1
+            nswaps += swaps
+            if bip.verbose:
+                print(f"{swaps} swaps")
+        if bip.verbose:
+            print(f"swaps at each round\ngenbip_corrected_configuration: {rounds} rounds, {nswaps} swaps total\n")

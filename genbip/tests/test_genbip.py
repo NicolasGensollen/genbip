@@ -1,6 +1,6 @@
 
 from ..bip import bip
-from ..genbip import GenBipConfiguration, GenBipPrunedConfiguration, GenBipRepeatedConfigurationWhole, GenBipRepeatedConfigurationAsap
+from ..genbip import GenBipConfiguration, GenBipPrunedConfiguration, GenBipRepeatedConfigurationWhole, GenBipRepeatedConfigurationAsap, GenBipCorrectedConfiguration
 
 def test_instantiation_genbip_configuration():
     genbip_conf = GenBipConfiguration()
@@ -92,3 +92,21 @@ def test_genbip_repeated_configuration_asap():
     assert test_bip.min_bot_deg == 2
     assert not test_bip.is_multigraph
 
+def test_genbip_corrected_configuration():
+    test_bip = bip.from_sequences([2,1,3,2],[2,2,2,2], ["a","b","c","d"], ["alpha", "beta", "gamma", "delta"])
+    genbip_corrected = GenBipCorrectedConfiguration(seed=123)
+    genbip_corrected.run(test_bip)
+    assert test_bip.top_degree == [2,1,3,2]
+    assert test_bip.bot_degree == [2,2,2,2]
+    assert test_bip.top_index == [0,2,3,6]
+    assert test_bip.top_vector ==  [0,0,1,2,2,2,3,3]
+    assert test_bip.bot_vector ==  [0,3,1,1,2,3,2,0]
+    assert test_bip.small
+    assert test_bip.n_top == 4
+    assert test_bip.n_bot == 4
+    assert test_bip.m == 8
+    assert test_bip.max_top_deg == 3
+    assert test_bip.min_top_deg == 1
+    assert test_bip.max_bot_deg == 2
+    assert test_bip.min_bot_deg == 2
+    assert not test_bip.is_multigraph

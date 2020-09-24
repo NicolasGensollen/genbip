@@ -1,5 +1,6 @@
 
 import gzip
+import random
 
 from .utils import is_bigraphic_gale_ryser
 
@@ -65,10 +66,10 @@ class bip:
             print(self.__repr__())
 
         # Size = sum of top degrees
-        # top_index[i] is the index in top_vector at which 
+        # top_index[i] is the index in top_vector at which
         self.top_index = [0] * self.n_top
 
-        # top_vector[i] = j means that 
+        # top_vector[i] = j means that
         self.top_vector = [0] * self.m
         self.bot_vector = [0] * self.m
 
@@ -181,7 +182,7 @@ class bip:
             else:
                 val += 1
                 top_index.append(i)
-                top_degree.append(1) 
+                top_degree.append(1)
         bot_degree = []
         val = -1
         for bv in bot_vector:
@@ -189,7 +190,7 @@ class bip:
                 bot_degree[-1] += 1
             else:
                 val += 1
-                bot_degree.append(1) 
+                bot_degree.append(1)
         self.top_degree = top_degree
         self.bot_degree = bot_degree
         self.top_index = top_index
