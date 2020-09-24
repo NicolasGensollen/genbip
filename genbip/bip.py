@@ -222,6 +222,12 @@ class bip:
         """
         return (v in self.bot_vector[self.top_index[u]:self.top_index[u]+self.top_degree[u]])
 
+    def dump(self, filename):
+        """Write the bi-partite graph to file filename."""
+        with open(filename,"w") as fp:
+            for i in range(self.m):
+                fp.write(f"{self.top_names[self.top_vector[i]]} {self.bot_names[self.bot_vector[i]]}\n")
+
     def __repr__(self):
         string = f"names:\n\t{self.top_names}\n\t{self.bot_names}\ndegrees:\n\t{self.top_degree}\n\t{self.bot_degree}\nlinks:\n\t{self.top_vector}\n\t{self.bot_vector}\n"
         return string
