@@ -28,8 +28,8 @@ class bip:
         self.bot_degree = np.array(bot_degree, dtype=np.int64)
 
         # Labels
-        self.top_names = top_names
-        self.bot_names = bot_names
+        self.top_names = np.array(top_names)
+        self.bot_names = np.array(bot_names)
 
         if self.n_top <= 0:
             raise ValueError("Size of top degree is <= 0.")
@@ -162,6 +162,16 @@ class bip:
             for i in range(self.top_index[u], self.top_index[u]+self.top_degree[u]):
                 neighbors_array[self.bot_vector[i]] = 0
         return False
+
+    def reorder_top_decreasing_degree(self):
+        mask = np.flip(np.argsort(self.top_degree))
+        self.top_degree = self.top_degree[mask]
+        self.top_names  = self.top_names[mask]
+
+    def reorder_bot_decreasing_degree(self):
+        mask = np.flip(np.argsort(self.bot_degree))
+        self.bot_degree = self.bot_degree[mask]
+        self.bot_names  = self.bot_names[mask]
 
     def is_bigraphic_gale_ryser(self):
         return is_bigraphic_gale_ryser(self.top_degree, self.bot_degree)

@@ -23,8 +23,8 @@ def test_genbip_configuration():
     assert test_bip.top_index.tolist()  == [0,2,3,6]
     assert test_bip.top_vector.tolist() == [0,0,1,2,2,2,3,3]
     assert test_bip.bot_vector.tolist() == [0,0,1,3,2,1,2,3]
-    assert test_bip.top_names == ["a","b","c","d"]
-    assert test_bip.bot_names == ["alpha","beta","gamma","delta"]
+    assert test_bip.top_names.tolist()  == ["a","b","c","d"]
+    assert test_bip.bot_names.tolist()  == ["alpha","beta","gamma","delta"]
     assert test_bip.small
     assert test_bip.n_top == 4
     assert test_bip.n_bot == 4
