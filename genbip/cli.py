@@ -28,7 +28,7 @@ def cli(top, bot, gen, seed, swaps, out):
                          "corrected": GenBipCorrectedConfiguration,
                          "havelhakimi": GenBipHavelHakimi,
                          }
-    generator_instance = generator_mapping[gen](seed)
+    generator_instance = generator_mapping[gen](seed=seed)
 
     # Run the generator on the bip
     generator_instance.run(bip_instance)

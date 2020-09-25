@@ -66,6 +66,11 @@ class bip:
         if self.verbose and self.small:
             print(self.__repr__())
 
+        self.initialize_vectors()
+
+
+    def initialize_vectors(self):
+        """Initialize and fill top and bot vectors as well as top index."""
         # Size = sum of top degrees
         # top_index[i] is the index in top_vector at which
         self.top_index = np.zeros(self.n_top, dtype=np.int64)
@@ -167,11 +172,13 @@ class bip:
         mask = np.flip(np.argsort(self.top_degree))
         self.top_degree = self.top_degree[mask]
         self.top_names  = self.top_names[mask]
+        self.initialize_vectors()
 
     def reorder_bot_decreasing_degree(self):
         mask = np.flip(np.argsort(self.bot_degree))
         self.bot_degree = self.bot_degree[mask]
         self.bot_names  = self.bot_names[mask]
+        self.initialize_vectors()
 
     def is_bigraphic_gale_ryser(self):
         return is_bigraphic_gale_ryser(self.top_degree, self.bot_degree)
