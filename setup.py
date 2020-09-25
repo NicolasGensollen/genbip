@@ -36,5 +36,5 @@ setup(
     include_package_data=True,
     zip_safe=True,
     install_requires=["numpy>=1.19.0"],
-    entry_points={"console_scripts": ["genbip=genbip.cli:cli"]},
+    entry_points={"console_scripts": ["genbip=genbip.cli:cli", "genseq=genbip.cli:genseq"]},
 )
