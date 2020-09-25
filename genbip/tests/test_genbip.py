@@ -79,9 +79,9 @@ def test_genbip_repeated_configuration_asap():
     genbip_rep_asap.run(test_bip)
     assert test_bip.top_degree.tolist() == [3,2,2,1]
     assert test_bip.bot_degree.tolist() == [2,2,2,2]
-    assert test_bip.top_index.tolist() == [0,2,3,6]
-    assert test_bip.top_vector.tolist() ==  [0,0,1,2,2,2,3,3]
-    assert test_bip.bot_vector.tolist() ==  [3,0,1,3,1,2,0,2]
+    assert test_bip.top_index.tolist()  == [0,3,5,7]
+    assert test_bip.top_vector.tolist() == [0,0,0,1,1,2,2,3]
+    assert test_bip.bot_vector.tolist() == [1,0,2,0,3,2,1,3]
     assert test_bip.small
     assert test_bip.n_top == 4
     assert test_bip.n_bot == 4
