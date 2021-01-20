@@ -1,4 +1,3 @@
-
 import random
 import numpy as np
 from genbip.bip import bip
@@ -141,6 +140,34 @@ class GenBipHavelHakimi(AbstractGenBip):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+    def random_swaps(self, bip):
+        n_swap = 0
+        n_edges = bip.m
+        N_swap = 10 * n_edges
+        #for edge in multiple_edges:
+        #accepted = False
+        print(f'{N_swap} swaps needed')
+        while n_swap < N_swap:
+            edge = np.random.choice(n_edges)
+            other_edge = np.random.choice(n_edges)
+            if other_edge == edge:
+                continue
+            if n_swap % 1000000 == 0:
+                print(f'{n_swap} / {N_swap} done')
+            # check if multiple edge
+            new_edge1 = (bip.top_vector[edge], bip.bot_vector[other_edge])
+            new_edge2 = (bip.top_vector[other_edge], bip.bot_vector[edge])
+            #if new_edge1 in anomaly_edges or new_edge2 in anomaly_edges: 
+            #    continue
+
+            if not (bip.link_exists(bip.top_vector[edge], bip.bot_vector[other_edge]) or bip.link_exists(bip.top_vector[other_edge], bip.bot_vector[edge])):
+                n_swap += 1
+                edge1 =  (bip.top_vector[edge], bip.bot_vector[edge])
+                edge2 =  (bip.top_vector[other_edge], bip.bot_vector[other_edge])
+                bip.swap(edge,other_edge)
+        print(f'{n_swap} / {N_swap} done')
+
+
     def run(self, bip):
         # Re-order top nodes by decreasing degree
         bip.reorder_top_decreasing_degree()
@@ -167,4 +194,6 @@ class GenBipHavelHakimi(AbstractGenBip):
                 sorted_bot[bot_deg_pos[bot_deg[v]]] = v
                 bot_deg_pos[bot_deg[v]] += 1
                 bot_deg[v] -= 1
+        print('doing swaps')
+        self.random_swaps(bip)
 

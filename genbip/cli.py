@@ -1,26 +1,41 @@
 import random
 import click
 from collections import Counter
+import numpy as np
+import ipdb
 
 from genbip.bip import bip
 from genbip.generators import GenBipConfiguration, GenBipPrunedConfiguration, GenBipRepeatedConfigurationWhole, GenBipRepeatedConfigurationAsap, GenBipCorrectedConfiguration, GenBipHavelHakimi
+from genbip.anomalyGenerator import *
 
 @click.command()
 @click.option('--top', required=True, type=click.Path(exists=True), help='Path to file for the top degree sequence.')
 @click.option('--bot', required=True, type=click.Path(exists=True), help='Path to file for the bottom degree sequence.')
 @click.option('--gen', required=True, type=click.Choice(['configuration','pruned','whole','asap','corrected','havelhakimi'], case_sensitive=False), help='Name of the generation method to use.')
 @click.option('--seed', type=int, help='Random seed to use with generator.')
+@click.option('--n_anomaly', type=int, help='number of nodes in anomaly')
+@click.option('--m_anomaly', type=int, help='number of edges in anomaly')
 @click.option('--swaps', default=0, type=int, help='Number of link swaps to be performed.')
 @click.option('--out', default="./out.txt", type=click.Path(), help='Path to file for writting output.')
-def cli(top, bot, gen, seed, swaps, out):
+def cli(top, bot, gen, seed, n_anomaly, m_anomaly, swaps, out):
     """Generate bi-partite graphs with the prescribed degree sequences."""
-
-    # Instantiate a bip first
-    bip_instance = bip.from_files(top, bot)
-
     if seed is None:
         seed = random.randint(0,10**6)
+        np.random.seed(seed)
         print(f"Random seed fixed to {seed}")
+
+    print('generating anomaly')
+    an_bip, edges = generate_anomaly(n_anomaly, m_anomaly)
+
+    # Instantiate a bip first
+    print('reading real data')
+    bip_instance = bip.from_files(top, bot)
+    print('adding anomaly to stream')
+    anomaly_edges = select_nodes_anomaly(an_bip, bip_instance, edges)
+    #ipdb.set_trace()
+
+
+
 
     # Instantiate a generator
     generator_mapping = {"configuration": GenBipConfiguration,
@@ -33,7 +48,14 @@ def cli(top, bot, gen, seed, swaps, out):
     generator_instance = generator_mapping[gen](seed=seed)
 
     # Run the generator on the bip
+    print('generating normality')
     generator_instance.run(bip_instance)
+    print('checking multiple edges')
+    multiple_edges = check_multiple_edges(bip_instance, anomaly_edges)
+    print(' {} multiple edges'.format(len(multiple_edges)))
+    target_multiple_edges(bip_instance, an_bip, anomaly_edges, multiple_edges)
+    multiple_edges = check_multiple_edges(bip_instance, anomaly_edges)
+
 
     # Write output
     bip_instance.dump(out)
@@ -69,4 +91,5 @@ def genseq(edgelist, top_output, bot_output, sep, sort):
             else:
                 for u,d in holder.items():
                     fp.write(f"{u}{sep}{d}\n")
-    
+if __name__ == "__main__":
+    cli()
