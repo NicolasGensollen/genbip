@@ -25,13 +25,14 @@ def cli(top, bot, gen, seed, n_anomaly, m_anomaly, swaps, out):
         print(f"Random seed fixed to {seed}")
 
     print('generating anomaly')
-    an_bip, edges = generate_anomaly(n_anomaly, m_anomaly)
+    anomalyGenerator = AnomalyGenerator(n_anomaly, m_anomaly)
+    an_bip, edges = anomalyGenerator.generate_anomaly()
 
     # Instantiate a bip first
-    print('reading real data')
+    print('reading dataset')
     bip_instance = bip.from_files(top, bot)
     print('adding anomaly to stream')
-    anomaly_edges = select_nodes_anomaly(an_bip, bip_instance, edges)
+    anomaly_edges = anomalyGenerator.select_nodes_anomaly(an_bip, bip_instance, edges)
     #ipdb.set_trace()
 
 
@@ -51,10 +52,10 @@ def cli(top, bot, gen, seed, n_anomaly, m_anomaly, swaps, out):
     print('generating normality')
     generator_instance.run(bip_instance)
     print('checking multiple edges')
-    multiple_edges = check_multiple_edges(bip_instance, anomaly_edges)
+    multiple_edges = anomalyGenerator.check_multiple_edges(bip_instance, anomaly_edges)
     print(' {} multiple edges'.format(len(multiple_edges)))
-    target_multiple_edges(bip_instance, an_bip, anomaly_edges, multiple_edges)
-    multiple_edges = check_multiple_edges(bip_instance, anomaly_edges)
+    anomalyGenerator.target_multiple_edges(bip_instance, an_bip, anomaly_edges, multiple_edges)
+    multiple_edges = anomalyGenerator.check_multiple_edges(bip_instance, anomaly_edges)
 
 
     # Write output
