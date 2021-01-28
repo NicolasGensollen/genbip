@@ -22,7 +22,7 @@ class AnomalyGenerator():
         top_names = list(range(self.n_anomaly))
         bot_names = list(range(self.n_anomaly))
         
-        # prick rdm edges
+        # prick m_anomaly random edges
         n_edges = 0
         edges = []
         while (n_edges < self.m_anomaly):
@@ -77,20 +77,23 @@ class AnomalyGenerator():
             np.random.seed(seed)
     
         # get nodes 
-        #assume anomaly generated
+        # assume anomaly generated
         has_duplicate = True
         top_selection = []
         bot_selection = []
         top_mapping = {}
         bot_mapping = {}
-        #ipdb.set_trace()
+
+        # loop until top nodes have been place without independently
+        # without replacement
         while (has_duplicate):
             for an_node, an_degree in enumerate(an_bip.top_degree):
-                #ipdb.set_trace()
     
+                # nodes with degree high enough
                 candidates = np.where(norm_bip.top_degree >= an_degree)
                 candidate_idx = np.random.choice(candidates[0])
-    
+
+                # check if node has already been selected
                 if candidate_idx in top_selection:
                     has_duplicate = True
                     top_selection = []
@@ -101,6 +104,8 @@ class AnomalyGenerator():
                     top_mapping[an_node] = candidate_idx
             else:
                 has_duplicate = False
+
+        # same process with bot nodes
         has_duplicate=True
         while (has_duplicate):
             for an_node, an_degree in enumerate(an_bip.bot_degree):
@@ -117,6 +122,8 @@ class AnomalyGenerator():
                     bot_mapping[an_node] =  candidate_idx
             else:
                 has_duplicate = False
+
+        # get remaining degrees for 'normal' bipartite
         for an_degree, norm_top_idx in zip(an_bip.top_degree,top_selection):
             norm_bip.top_degree[norm_top_idx] -= an_degree
     
@@ -124,15 +131,11 @@ class AnomalyGenerator():
             norm_bip.bot_degree[norm_bot_idx] = norm_bip.bot_degree[norm_bot_idx] - an_degree
         norm_bip.initialize_vectors()
     
-        #anomaly_edges = {}
+        # store anomaly edges to check for multiple edges later
         anomaly_edges = []
         for u_idx, v_idx in edges:
             anomaly_edges.append((top_mapping[u_idx], bot_mapping[v_idx]))
     
-            #if top_mapping[u_idx] in anomaly_edges:
-            #    anomaly_edges[vtop_mapping[u_idx]].append(bot_mapping[v_idx])
-            #else:
-            #    anomaly_edges[top_mapping[u_idx]] = [bot_mapping[v_idx]]
         return anomaly_edges
     
     
@@ -142,14 +145,15 @@ class AnomalyGenerator():
         """
         if seed is not None:
             np.random.seed(seed)
+
+        # get all multiple edges
         multiple_edges = []
         for top_pos, _ in enumerate(norm_bip.top_index[:-1]):
             for vect_idx in range(norm_bip.top_index[top_pos], norm_bip.top_index[top_pos + 1]):
                 edge = (norm_bip.top_vector[vect_idx], norm_bip.bot_vector[vect_idx])
-                #norm_edges.add((norm_bip.top_vector[vect_idx], norm_bip.bot_vector[vect_idx]))
-                #norm_edges.add(edge)
                 if edge in anomaly_edges:
                     multiple_edges.append(vect_idx)
+
         return multiple_edges
     
     def target_multiple_edges(self, norm_bip, an_bip, anomaly_edges, multiple_edges, seed=None):
@@ -157,10 +161,13 @@ class AnomalyGenerator():
           to get simple graph"""
         if seed is not None:
             np.random.seed(seed)
-        ### swap specifically multiple edges
+
+        # swap specifically multiple edges
         n_swap = 0
         for edge in multiple_edges:
             accepted = False
+
+            # loop until a swap is accepted
             while (not accepted):#n_swap <len(multiple_edges):
                 other_edge = np.random.choice(norm_bip.m)
                 if other_edge == edge:
@@ -171,12 +178,11 @@ class AnomalyGenerator():
                 new_edge2 = (norm_bip.top_vector[other_edge], norm_bip.bot_vector[edge])
                 if new_edge1 in anomaly_edges or new_edge2 in anomaly_edges: 
                     continue
-    
+
+                # if edge doesn't already exist, accept swap 
                 if not norm_bip.link_exists(norm_bip.top_vector[edge], norm_bip.bot_vector[other_edge]):
                     n_swap += 1
                     edge1 =  (norm_bip.top_vector[edge], norm_bip.bot_vector[edge])
                     edge2 =  (norm_bip.top_vector[other_edge], norm_bip.bot_vector[other_edge])
                     accepted = True
                     norm_bip.swap(edge,other_edge)
-    
-    
