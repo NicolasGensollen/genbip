@@ -20,6 +20,7 @@ Thumbs.db
 __pycache__
 
 docs/_build
+docs/build
 .ipynb_checkpoints
 
 # Compiled Python files
