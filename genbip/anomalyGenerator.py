@@ -83,6 +83,8 @@ class AnomalyGenerator():
         bot_selection = []
         top_mapping = {}
         bot_mapping = {}
+        top_anomaly2norm = {}
+        bot_anomaly2norm = {}
 
         # loop until top nodes have been place without independently
         # without replacement
@@ -98,10 +100,12 @@ class AnomalyGenerator():
                     has_duplicate = True
                     top_selection = []
                     top_mapping = {}
+                    top_anomaly2norm = {}
                     break
                 else:
                     top_selection.append(candidate_idx)
                     top_mapping[an_node] = candidate_idx
+                    top_anomaly2norm[candidate_idx] = an_node
             else:
                 has_duplicate = False
 
@@ -116,10 +120,12 @@ class AnomalyGenerator():
                     has_duplicate = True
                     bot_selection = []
                     bot_mapping  = {}
+                    bot_anomaly2norm = {}
                     break
                 else:
                     bot_selection.append(candidate_idx)
                     bot_mapping[an_node] =  candidate_idx
+                    bot_anomaly2norm[candidate_idx] = an_node
             else:
                 has_duplicate = False
 
@@ -169,6 +175,8 @@ class AnomalyGenerator():
 
             # loop until a swap is accepted
             while (not accepted):#n_swap <len(multiple_edges):
+                
+
                 other_edge = np.random.choice(norm_bip.m)
                 if other_edge == edge:
                     continue
@@ -186,3 +194,26 @@ class AnomalyGenerator():
                     edge2 =  (norm_bip.top_vector[other_edge], norm_bip.bot_vector[other_edge])
                     accepted = True
                     norm_bip.swap(edge,other_edge)
+
+    def _swap_edges(self, edge, bip, other_bip, other_edges, mapping):
+        other_edge = np.random.choice(bip.m)
+        if other_edge == edge:
+            continue
+        
+        # check if multiple edge
+        new_edge1 = (bip.top_vector[edge], bip.bot_vector[other_edge])
+        new_edge2 = (bip.top_vector[other_edge], bip.bot_vector[edge])
+        #if new_edge1 in anomaly_edges or new_edge2 in other_edges: 
+        #    continue
+        if (other_bip.link_exists(mapping[new_edge1[0]], mapping[new_edge1[1]]) or
+            other_bip.link_exists(mapping[new_edge1[0]], mapping[new_edge1[1]])):
+            continue
+
+        # if edge doesn't already exist, accept swap 
+        if not bip.link_exists(bip.top_vector[edge], bip.bot_vector[other_edge]):
+            n_swap += 1
+            edge1 =  (bip.top_vector[edge], bip.bot_vector[edge])
+            edge2 =  (bip.top_vector[other_edge], bip.bot_vector[other_edge])
+            accepted = True
+            bip.swap(edge,other_edge)
+
