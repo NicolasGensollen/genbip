@@ -1,10 +1,18 @@
+"""
+    TODO : still some work to clarify how to add anomaly...
+    Given top and bottom degree sequences, and anomaly parameters,
+    generate an anomaly using an Erdos Renyi model, and randomly select nodes
+    with high enough degree to 'host' the anomaly. Substract the anomaly 
+    degrees to the node degrees.
+"""
+import logging
 import numpy as np
 
 from genbip.bip import bip
 
 class AnomalyGenerator():
 
-    def __init__(self, n_anomaly, m_anomaly, seed=None):
+    def __init__(self, n_anomaly, m_anomaly, seed=None, logger=None):
         # anomaly parameters
         self.n_anomaly = n_anomaly
         self.m_anomaly = m_anomaly
@@ -12,6 +20,17 @@ class AnomalyGenerator():
         # random seed
         if seed is not None:
             np.random.seed(seed)
+
+        if logger is not None:
+            self.logger = logger
+        else:
+            logging.basicConfig(
+                    level=logging.INFO,
+                    format='%(asctime)s %(levelname)-8s %(message)s',
+                    datefmt='%m-%d %H:%M'
+                    )
+            self.logger = logging.getLogger()
+
 
     def generate_anomaly(self):
         """ Generate anomaly by picking random nodes (u,v), 
@@ -198,7 +217,7 @@ class AnomalyGenerator():
     def _swap_edges(self, edge, bip, other_bip, other_edges, mapping):
         other_edge = np.random.choice(bip.m)
         if other_edge == edge:
-            continue
+            return
         
         # check if multiple edge
         new_edge1 = (bip.top_vector[edge], bip.bot_vector[other_edge])
@@ -207,7 +226,7 @@ class AnomalyGenerator():
         #    continue
         if (other_bip.link_exists(mapping[new_edge1[0]], mapping[new_edge1[1]]) or
             other_bip.link_exists(mapping[new_edge1[0]], mapping[new_edge1[1]])):
-            continue
+            return
 
         # if edge doesn't already exist, accept swap 
         if not bip.link_exists(bip.top_vector[edge], bip.bot_vector[other_edge]):

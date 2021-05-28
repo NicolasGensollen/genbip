@@ -1,4 +1,23 @@
+"""
+    Implement bipartite graph generator using different models.
+    Available models:
+        - configuration model: pick all edges at random to fit node degrees.
+                               can give multiple edges.
+        - pruned configuration model: Configuration model but remove multiple
+                               edges. 
+        - repeated configuration whole: Run a complete configuration model 
+                               until a simple graph is picked.
+        - repeated configuration asap: Run a configuration model but stop it
+                               as soon as a multiple edge is picked.
+        - corrected configuration model: Run a configuration model but 
+                               when a multiple edge is picked, perform random
+                               swaps until there a no multiple edges
+        - Havel-Hakimi model: Run a modified Havel Hakimi to generate
+                              a bipartite graph.
+"""
+
 import random
+import logging
 import numpy as np
 from genbip.bip import bip
 
@@ -8,9 +27,20 @@ class AbstractGenBip:
     """
     def __init__(self, **kwargs):
         self.seed = None
+        self.logger = None
         if "seed" in kwargs:
             seed = kwargs.pop("seed")
             self.set_random_seed(seed)
+        if "logger" in kwargs:
+            self.logger = logger
+        else:
+            logging.basicConfig(
+                    level=logging.INFO,
+                    format='%(asctime)s %(levelname)-8s %(message)s',
+                    datefmt='%m-%d %H:%M'
+                    )
+            self.logger = logging.getLogger()
+
 
     def set_random_seed(self, seed):
         if seed is not None:
@@ -28,7 +58,7 @@ class AbstractGenBip:
 class GenBipConfiguration(AbstractGenBip):
     """
         Class implementing the basic configuration model.
-        This is equivalent to shuffling the not array of a Bip class.
+        This is equivalent to shuffling the bot array of a Bip class.
     """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -55,7 +85,9 @@ class GenBipPrunedConfiguration(AbstractGenBip):
 
 class GenBipRepeatedConfigurationWhole(AbstractGenBip):
     """
-
+        Class implementing the Repeated configuration model.
+        Run a complete configuration model, and try again until a simple graph
+        is picked
     """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -66,14 +98,16 @@ class GenBipRepeatedConfigurationWhole(AbstractGenBip):
         while bip.is_multigraph:
             np.random.shuffle(bip.bot_vector)
             i += 1
-            if bip.verbose:
-                print(f"{i}")
-        if bip.verbose:
-            print(f"genbip_repeated_configuration_whole: {i} global shufflings performed\n")
+            #if bip.verbose:
+            self.logger.debug(f"{i}")
+        #if bip.verbose:
+        self.logger.debug(f"genbip_repeated_configuration_whole: {i} global shufflings performed\n")
 
 class GenBipRepeatedConfigurationAsap(AbstractGenBip):
     """
-
+        Class implementing the repeated configuration ASAP model.
+        Run a configuration model but stop it as soon a multiple edge is
+        picked and try again.
     """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -103,13 +137,15 @@ class GenBipRepeatedConfigurationAsap(AbstractGenBip):
                 if multi:
                     break
             rounds += 1
-            if bip.verbose:
-                print(f"{rounds}")
-        print(f"genbip_repeated_configuration_asap: {rounds} rounds\n")
+            #if bip.verbose:
+            self.logger.debug(f"{rounds}")
+        self.logger.info(f"genbip_repeated_configuration_asap: {rounds} rounds\n")
 
 class GenBipCorrectedConfiguration(AbstractGenBip):
     """
-
+        Class implementing the corrected configuration model.
+        Run a configuration model but when a multiple edge is picked,
+        perform random swaps until there are no multiple edges left.
     """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -128,14 +164,15 @@ class GenBipCorrectedConfiguration(AbstractGenBip):
                     neighbors.add(v)
             rounds += 1
             nswaps += swaps
-            if bip.verbose:
-                print(f"{swaps} swaps")
-        if bip.verbose:
-            print(f"swaps at each round\ngenbip_corrected_configuration: {rounds} rounds, {nswaps} swaps total\n")
+            #if bip.verbose:
+            self.logger.debug(f"{swaps} swaps")
+        #if bip.verbose:
+        self.logger.debug(f"swaps at each round\ngenbip_corrected_configuration: {rounds} rounds, {nswaps} swaps total\n")
 
 class GenBipHavelHakimi(AbstractGenBip):
     """
-
+        Class implementing the Havel-Hakimi model, modified to generate
+        bipartite graphs.
     """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -146,14 +183,14 @@ class GenBipHavelHakimi(AbstractGenBip):
         N_swap = 10 * n_edges
         #for edge in multiple_edges:
         #accepted = False
-        print(f'{N_swap} swaps needed')
+        self.logger.debug(f'{N_swap} swaps needed')
         while n_swap < N_swap:
             edge = np.random.choice(n_edges)
             other_edge = np.random.choice(n_edges)
             if other_edge == edge:
                 continue
             if n_swap % 1000000 == 0:
-                print(f'{n_swap} / {N_swap} done')
+                self.logger.info(f'{n_swap} / {N_swap} done')
             # check if multiple edge
             new_edge1 = (bip.top_vector[edge], bip.bot_vector[other_edge])
             new_edge2 = (bip.top_vector[other_edge], bip.bot_vector[edge])
@@ -165,7 +202,7 @@ class GenBipHavelHakimi(AbstractGenBip):
                 edge1 =  (bip.top_vector[edge], bip.bot_vector[edge])
                 edge2 =  (bip.top_vector[other_edge], bip.bot_vector[other_edge])
                 bip.swap(edge,other_edge)
-        print(f'{n_swap} / {N_swap} done')
+        self.logger.debug(f'{n_swap} / {N_swap} done')
 
 
     def run(self, bip):
@@ -194,6 +231,5 @@ class GenBipHavelHakimi(AbstractGenBip):
                 sorted_bot[bot_deg_pos[bot_deg[v]]] = v
                 bot_deg_pos[bot_deg[v]] += 1
                 bot_deg[v] -= 1
-        print('doing swaps')
         self.random_swaps(bip)
 

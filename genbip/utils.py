@@ -1,4 +1,4 @@
-
+import ipdb
 import numpy as np
 
 
@@ -47,4 +47,153 @@ def is_bigraphic_gale_ryser(seq1, seq2):
         if a_sum > bprime_sum:
             return False
     return True
+
+def map_bip_names(bip, other_bip):
+    """ When two seperate bip instance share the same nodes, with one
+        set included in the other, this maps the position of the names from
+        one set to the other
+    """
+    # loop over nodes names of bip
+    # assume bip is smaller than other_bip
+    top_bip2other = dict()
+    top_other2bip = dict()
+    bot_bip2other = dict()
+    bot_other2bip = dict()
+
+    # map top names indexes
+    # parcourir top_names le plus grand
+    for idx, name in enumerate(bip.top_names):
+        #try:
+        #    other_idx = np.where(other_bip.top_names == name)[0][0]
+        #except:
+        #    # if node isn't in othe graph, shouldn't happen
+        #    # but can if bip is normal and other_bip is anomaly
+        #    continue
+        if name in other_bip.top_names2idx:
+            other_idx = other_bip.top_names2idx[name]
+        top_bip2other[idx] = other_idx
+        top_other2bip[other_idx] = idx
+
+    # map bot names indexes
+    for idx, name in enumerate(bip.bot_names):
+        #try:
+        #    other_idx = np.where(other_bip.bot_names == name)[0][0]
+        #except:
+        #    # if node isn't in othe graph, shouldn't happen
+        #    # but can if bip is normal and other_bip is anomaly
+        #    continue
+        if name in other_bip.bot_names2idx:
+            other_idx = other_bip.bot_names2idx[name]
+        bot_bip2other[idx] = other_idx
+        bot_other2bip[other_idx] = idx
+
+    ## parcourir les array en indexant
+    return top_bip2other, top_other2bip, bot_bip2other, bot_other2bip
+
+def check_multiple(normal_bip, anomaly_bip, mappers):
+    """ check multiple edges between normal and anomaly bip"""
+
+    def _compare_neighbours(bip, u, other_bip, other_u, top_mapper, bot_mapper):
+        """given a node u present in two bip, compare their neighbours"""
+        common_neighbours = []
+        #ipdb.set_trace()
+        for v_idx, v in enumerate(bip.bot_vector[bip.top_index[u]: bip.top_index[u] + bip.top_degree[u]]):
+
+            # check if bot node exist in other bip
+            if not (bip.bot_names[v] in other_bip.bot_names):
+                continue
+
+            # get corresponding v in other bip - TODO might do mapping..?
+            #other_v = np.where(other_bip.bot_names == bip.bot_names[v])[0][0]
+            #ipdb.set_trace()
+            try:
+                other_v = bot_mapper[v]
+            except:
+                ipdb.set_trace()
+                other_v = bot_mapper[v]
+            # check if other_v is a neighbour of other_u
+            try:
+                other_vIdx = np.where(other_bip.bot_vector[other_bip.top_index[other_u]:other_bip.top_index[other_u]+other_bip.top_degree[other_u]] == other_v)[0][0]
+                common_neighbours.append((v_idx+bip.top_index[u], other_vIdx + other_bip.top_index[other_u]))
+            except IndexError:
+                continue
+
+            #if other_bip.link_exists(other_u, other_v):
+            #    common_neighbours.append(v, other_v)
+            #else:
+            #    continue
+        return common_neighbours
+    top_an2norm, top_norm2an, bot_an2norm, bot_norm2an = mappers
+
+    multiedges = []
+    #print('multiple edges check')
+    #print(normal_bip)
+    #print(anomaly_bip)
+    #ipdb.set_trace()
+    for u_an, u_anName in enumerate(anomaly_bip.top_names):
+        #u_anIdx = anomaly_bip.top_names.index(u)
+        _u_norm = np.where(normal_bip.top_names == u_anName)[0]#[0]
+        if len(_u_norm) == 0:
+            continue
+        u_norm = _u_norm[0]
+        # iterate in graph in which node has smallest degree
+        if normal_bip.top_degree[u_norm] > anomaly_bip.top_degree[u_an]:
+            #print('parkour anomaly')
+            _multiedge = _compare_neighbours(anomaly_bip, u_an, normal_bip, u_norm, top_an2norm, bot_an2norm)
+            # keep normal bot index as first
+            multiedges += [(v2, v1) for v1, v2 in _multiedge]
+        else:
+            #print('parkour normal')
+            _multiedge = _compare_neighbours(normal_bip, u_norm, anomaly_bip, u_an, top_norm2an, bot_norm2an)
+            multiedges += _multiedge
+
+        ## when multiple edge detected, add to list to be swapped later
+        #if is_multiedge:
+        #    multiedge.append((u, v))
+        #norm_deg = top_degree
+        #an_deg = an_degree
+        # parcourir celui de degré plus faible à chaque fois
+    return multiedges
+
+def swap_multiple(normal_bip, anomaly_bip, multiple_edges, mappers):
+    """ target multiple edges to swap them"""
+
+    def _swap_edges(bip, other_bip, i, other_i, top_mapper, bot_mapper):
+        acceptable = False
+        u = bip.top_vector[i]
+
+        #other_u = other_bip.top_vector[other_i]
+        other_u = top_mapper[u]
+        v = bip.bot_vector[i]
+        #other_v = other_bip.bot_vector[other_i]
+        other_v = bot_mapper[v]
+
+        while not acceptable:
+            j = random.randrange(bip.m)
+
+            # get index of same bot node in other bip
+            new_v = bip.bot_vector[j]
+            if bip.bot_names[new_v] in other_bip.bot_names:
+                #other_v = np.where(other_bip.bot_names == bip.bot_names[new_v])[0][0]
+                other_new_v = bot_mapper[new_v]
+                if bip.link_exists(bip.top_vector[i], bip.bot_vector[j]) or other_bip.link_exists(other_u, other_v):
+                    acceptable = False
+                else:
+                    acceptable = True
+            else:
+                if bip.link_exists(bip.top_vector[i], bip.bot_vector[j]):
+                    acceptable = False
+            #if v in other_bip.bot_vector:
+            #    other_j = other_bip.bot_vector[other_bip.top_index[other_u]:other_bip.top_index[other_u] + other_bip.top_degree[other_u]].index(v)
+
+            # check if acceptable 
+        bip.swap(u,v)
+    top_an2norm, top_norm2an, bot_an2norm, bot_norm2an = mappers
+    # swap each multiple edge
+    for norm_idx, an_idx in multiple_edges:
+        if np.random.uniform(0,1) >= 0.5:
+            #normal_bip.random_swap(u)
+            _swap_edges(normal_bip, anomaly_bip, norm_idx, an_idx, top_norm2an, bot_norm2an)
+        else:
+            _swap_edges(anomaly_bip, normaly_bip, an_idx, norm_idx, top_an2norm, bot_an2norm)
 

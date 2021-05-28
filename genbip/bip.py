@@ -1,4 +1,39 @@
+"""Bipartite Graph
+A bipartite graph is stored by three data structures: 
+    - top vector : 
+                        Stores each top "stub" by it's top node name. 
+                        E.G. when node '5' has a degree of 2, the top
+                        vector will contain [...,5,5,...].
+                        The top vector is ordered.
+    - top index : 
+                        For each node, store the index of first occurence 
+                        of this node name in the top vector
+    - bottom vector : 
+                        Stores each bottom "stub" by it's bottom node name.
+                        The bottom vector is unordered.
+    - top/bottom names : 
+                        The names of the nodes.
+                        
+Then, an edge in the bipartite graph is represented by the values of
+the top vector and bottom vector at a given index.
 
+For example: 
+The bipartite graph:
+
+>>> top_vector    = [0,0,1]
+>>> top_index     = [0, 2]
+>>> bottom_vector = [0,1,2]
+>>> top_names     = [a, b]
+>>> bottom_names  = [alpha, beta, gamma]
+
+contains the edges:
+
+>>> a - alpha
+>>> a - beta
+>>> b - gamma
+
+"""
+import ipdb
 import gzip
 import random
 import numpy as np
@@ -8,9 +43,32 @@ from genbip.utils import is_bigraphic_gale_ryser
 SMALL_SIZE = 100
 
 class bip:
-    """Bi-partite class"""
+    """ Bi-partite class
 
-    def __init__(self, top_filename, bot_filename, top_degree, bot_degree, top_names, bot_names, verbose=False):
+        Attributes
+        ==========
+
+        top_filename: str,
+            path to the file containing the top degree sequence, in the
+            format:
+                node1 degree1
+                node2 degree2
+        bottom_filename: str,
+            path to the file containing the bottom degree sequence, same
+            format as top_filename.
+        top_degree: list of int,
+            list of top nodes degree. Position in list gives node index.
+        bot_degree: list of int,
+            list of bottom nodes degree. Position in list gives node index.
+        top_names: list of str,
+            list of the top node names. Position in list gives node index.
+        bot_names: list of str,
+            list of the bottom node names. Position in list gives node index.
+        verbose: bool,
+            enable to be more verbose
+    """
+
+    def __init__(self, top_filename, bot_filename, top_degree, bot_degree, top_names, bot_names, top_names2idx=None, bot_names2idx=None, verbose=False):
         # Filenames
         self.top_filename = top_filename
         self.bot_filename = bot_filename
@@ -30,6 +88,11 @@ class bip:
         # Labels
         self.top_names = np.array(top_names)
         self.bot_names = np.array(bot_names)
+
+        # Keep mapping to indexes. Useful when using several bip instances.
+        self.top_names2idx = top_names2idx
+        self.bot_names2idx = bot_names2idx
+
 
         if self.n_top <= 0:
             raise ValueError("Size of top degree is <= 0.")
@@ -96,35 +159,56 @@ class bip:
 
 
     @classmethod
-    def from_files(cls, top_filename, bot_filename, verbose=False):
+    def from_files(cls, top_filename, bot_filename, keep_idx=False, verbose=False):
+        """ Get top and bottom degree list and node names from
+            the input files, to initialize bip object.
+        """
         if verbose:
             print("Read input degree sequences, and store names")
         top_degree = []
         top_names = []
         bot_degree = []
         bot_names = []
-        for (f,degree,names) in ((gzip.open(top_filename),top_degree,top_names),(gzip.open(bot_filename),bot_degree,bot_names)):
+
+        # keep indexes
+        if keep_idx:
+            top_names2idx = dict()
+            bot_names2idx = dict()
+        else:
+            top_names2idx = None 
+            bot_names2idx = None 
+
+        for (f,degree,names, names2idx) in ((gzip.open(top_filename),top_degree,top_names, top_names2idx),(gzip.open(bot_filename),bot_degree,bot_names, bot_names2idx)):
             for line in f:
                 l = line.decode('utf-8').strip().split(" ")
                 assert len(l)==2
                 names.append(l[0])
                 degree.append(int(l[1]))
-        return cls(top_filename, bot_filename, top_degree, bot_degree, top_names, bot_names, verbose=verbose)
+                if keep_idx:
+                    names2idx[l[0]] = len(names) - 1
+
+        return cls(top_filename, bot_filename, top_degree, bot_degree, top_names, bot_names, top_names2idx, bot_names2idx, verbose=verbose)
 
     @classmethod
     def from_sequences(cls, top_degree, bot_degree, top_names, bot_names, verbose=False):
+        """ Initialize bip object from top and bottom degree lists 
+            and node names.
+        """
         return cls("", "", top_degree, bot_degree, top_names, bot_names, verbose=verbose)
 
     @property
     def n_top(self):
+        """Number of top nodes"""
         return self.top_degree.shape[0]
 
     @property
     def n_bot(self):
+        """Number of bottom nodes"""
         return self.bot_degree.shape[0]
 
     @property
     def m(self):
+        """Number of edges"""
         return sum(self.top_degree)
 
     @property
@@ -216,11 +300,16 @@ class bip:
         self.bot_vector = np.array(bot_vector, dtype=np.int64)
 
     def swap(self, i, j):
-        """Swap """
+        """Swap edges top_names[i] - bot_names[i] and 
+           top_names[j] - bot_names[j]
+        """
         self.bot_vector[i],self.bot_vector[j] = self.bot_vector[j],self.bot_vector[i]
 
     def random_swap(self, i):
-        """Swap """
+        """Given an edge top_names[i] - bot_names[i], randomly pick
+           an edge to swap it with.
+        """
+
         self.swap(i, random.randrange(self.m))
 
     def link_exists(self, u, v):
