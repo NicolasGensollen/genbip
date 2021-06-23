@@ -155,10 +155,10 @@ def check_multiple(normal_bip, anomaly_bip, mappers):
         # parcourir celui de degré plus faible à chaque fois
     return multiedges
 
-def swap_multiple(normal_bip, anomaly_bip, multiple_edges, mappers):
+def swap_multiple(normal_bip, anomaly_bip, multiple_edges, mappers, logger):
     """ target multiple edges to swap them"""
 
-    def _swap_edges(bip, other_bip, i, other_i, top_mapper, bot_mapper):
+    def _swap_edges(bip, other_bip, i, other_i, top_mapper, bot_mapper, logger, threshold=500):
         acceptable = False
         u = bip.top_vector[i]
 
@@ -168,8 +168,11 @@ def swap_multiple(normal_bip, anomaly_bip, multiple_edges, mappers):
         #other_v = other_bip.bot_vector[other_i]
         other_v = bot_mapper[v]
 
-        while not acceptable:
-            j = random.randrange(bip.m)
+        # break when can't find acceptable swap after threshold try
+        idx_try = 0
+        while not acceptable and idx_try < threshold:
+            #j = random.randrange(bip.m)
+            j = np.random.randint(low=0, high=bip.m)
 
             # get index of same bot node in other bip
             new_v = bip.bot_vector[j]
@@ -178,22 +181,30 @@ def swap_multiple(normal_bip, anomaly_bip, multiple_edges, mappers):
                 other_new_v = bot_mapper[new_v]
                 if bip.link_exists(bip.top_vector[i], bip.bot_vector[j]) or other_bip.link_exists(other_u, other_v):
                     acceptable = False
+                    logger.debug('not accepting swap')
+                    idx_try += 1
                 else:
                     acceptable = True
-            else:
-                if bip.link_exists(bip.top_vector[i], bip.bot_vector[j]):
+                    idx_try = 0
+            elif bip.link_exists(bip.top_vector[i], bip.bot_vector[j]):
+                    logger.debug('not accepting swap')
                     acceptable = False
+                    idx_try += 1
+
             #if v in other_bip.bot_vector:
             #    other_j = other_bip.bot_vector[other_bip.top_index[other_u]:other_bip.top_index[other_u] + other_bip.top_degree[other_u]].index(v)
 
             # check if acceptable 
+        if idx_try >= threshold:
+            raise RuntimeError('Unable to find acceptable swap in Edge swap')
         bip.swap(u,v)
     top_an2norm, top_norm2an, bot_an2norm, bot_norm2an = mappers
     # swap each multiple edge
+    logger.debug('{} multiple edge to swap'.format(len(multiple_edges)))
     for norm_idx, an_idx in multiple_edges:
         if np.random.uniform(0,1) >= 0.5:
             #normal_bip.random_swap(u)
             _swap_edges(normal_bip, anomaly_bip, norm_idx, an_idx, top_norm2an, bot_norm2an)
         else:
-            _swap_edges(anomaly_bip, normaly_bip, an_idx, norm_idx, top_an2norm, bot_an2norm)
+            _swap_edges(anomaly_bip, normal_bip, an_idx, norm_idx, top_an2norm, bot_an2norm)
 

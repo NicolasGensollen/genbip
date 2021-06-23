@@ -185,8 +185,11 @@ class GenBipHavelHakimi(AbstractGenBip):
         #accepted = False
         self.logger.debug(f'{N_swap} swaps needed')
         while n_swap < N_swap:
-            edge = np.random.choice(n_edges)
-            other_edge = np.random.choice(n_edges)
+            #edge = np.random.choice(n_edges)
+            #other_edge = np.random.choice(n_edges)
+            #(edge, other_edge) = np.random.choice(n_edges, size=(2,), replace=True)
+            (edge, other_edge) = np.random.randint(low=0, high=n_edges, size=(2,))
+
             if other_edge == edge:
                 continue
             if n_swap % 1000000 == 0:
