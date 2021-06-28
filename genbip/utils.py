@@ -69,8 +69,11 @@ def map_bip_names(bip, other_bip):
         #    # if node isn't in othe graph, shouldn't happen
         #    # but can if bip is normal and other_bip is anomaly
         #    continue
-        if name in other_bip.top_names2idx:
+        #if name in other_bip.top_names2idx:
+        try:
             other_idx = other_bip.top_names2idx[name]
+        except KeyError as err:
+            continue
         top_bip2other[idx] = other_idx
         top_other2bip[other_idx] = idx
 
@@ -82,8 +85,12 @@ def map_bip_names(bip, other_bip):
         #    # if node isn't in othe graph, shouldn't happen
         #    # but can if bip is normal and other_bip is anomaly
         #    continue
-        if name in other_bip.bot_names2idx:
+        #if name in other_bip.bot_names2idx:
+        try:
             other_idx = other_bip.bot_names2idx[name]
+        except KeyError as err:
+            continue
+
         bot_bip2other[idx] = other_idx
         bot_other2bip[other_idx] = idx
 
