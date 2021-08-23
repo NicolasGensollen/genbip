@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 from codecs import open
 import os
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, Extension
+from glob import glob
+from Cython.Build import cythonize
 
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -21,12 +23,21 @@ about = {}
 with open(os.path.join(filepath, "genbip", "__version__.py"), "r", "utf-8") as f:
     exec(f.read(), about)
 
+# cython extension
+extensions = [Extension('edge_swapper',
+                        ['genbip/edge_swapper.pyx'],
+                         extra_compile_args=["-std=c++11"],
+                         extra_link_args=["-std=c++11"]
+                         )]
+
+
 setup(
     name=about["__title__"],
     version=about["__version__"],
     description=about["__description__"],
     long_description=None,
     classifiers=classifiers,
+    ext_modules=cythonize(extensions),
     keywords="bi-partite graph generation python",
     author=about["__author__"],
     author_email=about["__author_email__"],

@@ -116,8 +116,9 @@ def check_multiple(normal_bip, anomaly_bip, mappers):
             try:
                 other_v = bot_mapper[v]
             except:
-                ipdb.set_trace()
-                other_v = bot_mapper[v]
+                #ipdb.set_trace()
+                #other_v = bot_mapper[v]
+                continue
             # check if other_v is a neighbour of other_u
             try:
                 other_vIdx = np.where(other_bip.bot_vector[other_bip.top_index[other_u]:other_bip.top_index[other_u]+other_bip.top_degree[other_u]] == other_v)[0][0]

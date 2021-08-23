@@ -15,6 +15,7 @@
         - Havel-Hakimi model: Run a modified Havel Hakimi to generate
                               a bipartite graph.
 """
+from edge_swapper import *
 
 import random
 import logging
@@ -180,32 +181,36 @@ class GenBipHavelHakimi(AbstractGenBip):
     def random_swaps(self, bip):
         n_swap = 0
         n_edges = bip.m
-        N_swap = 10 * n_edges
+        N_swap = 10* n_edges
+        #N_swap = n_edges
         #for edge in multiple_edges:
         #accepted = False
         self.logger.debug(f'{N_swap} swaps needed')
-        while n_swap < N_swap:
-            #edge = np.random.choice(n_edges)
-            #other_edge = np.random.choice(n_edges)
-            #(edge, other_edge) = np.random.choice(n_edges, size=(2,), replace=True)
-            (edge, other_edge) = np.random.randint(low=0, high=n_edges, size=(2,))
+        rdm_swapper = pyRandomSwapper(bip.top_vector, bip.bot_vector, bip.top_index, bip.top_degree)
+        bip.bot_vector = rdm_swapper.pyRandom_swaps(N_swap)
+        #t0 = time.time()
+        #while n_swap < N_swap:
+        #    #edge = np.random.choice(n_edges)
+        #    #other_edge = np.random.choice(n_edges)
+        #    #(edge, other_edge) = np.random.choice(n_edges, size=(2,), replace=True)
+        #    (edge, other_edge) = np.random.randint(low=0, high=n_edges, size=(2,))
 
-            if other_edge == edge:
-                continue
-            if n_swap % 1000000 == 0:
-                self.logger.info(f'{n_swap} / {N_swap} done')
-            # check if multiple edge
-            new_edge1 = (bip.top_vector[edge], bip.bot_vector[other_edge])
-            new_edge2 = (bip.top_vector[other_edge], bip.bot_vector[edge])
-            #if new_edge1 in anomaly_edges or new_edge2 in anomaly_edges: 
-            #    continue
+        #    if other_edge == edge:
+        #        continue
+        #    if n_swap % 1000000 == 0:
+        #        self.logger.info(f'{n_swap} / {N_swap} done')
+        #    # check if multiple edge
+        #    new_edge1 = (bip.top_vector[edge], bip.bot_vector[other_edge])
+        #    new_edge2 = (bip.top_vector[other_edge], bip.bot_vector[edge])
+        #    #if new_edge1 in anomaly_edges or new_edge2 in anomaly_edges: 
+        #    #    continue
 
-            if not (bip.link_exists(bip.top_vector[edge], bip.bot_vector[other_edge]) or bip.link_exists(bip.top_vector[other_edge], bip.bot_vector[edge])):
-                n_swap += 1
-                edge1 =  (bip.top_vector[edge], bip.bot_vector[edge])
-                edge2 =  (bip.top_vector[other_edge], bip.bot_vector[other_edge])
-                bip.swap(edge,other_edge)
-        self.logger.debug(f'{n_swap} / {N_swap} done')
+        #    if not (bip.link_exists(bip.top_vector[edge], bip.bot_vector[other_edge]) or bip.link_exists(bip.top_vector[other_edge], bip.bot_vector[edge])):
+        #        n_swap += 1
+        #        edge1 =  (bip.top_vector[edge], bip.bot_vector[edge])
+        #        edge2 =  (bip.top_vector[other_edge], bip.bot_vector[other_edge])
+        #        bip.swap(edge,other_edge)
+        #t1 = time.time()
 
 
     def run(self, bip):
