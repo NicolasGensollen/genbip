@@ -22,7 +22,6 @@ Available models:
         a bipartite graph.
 """
 from edge_swapper import *
-
 import random
 import logging
 import numpy as np
@@ -180,46 +179,36 @@ class GenBipHavelHakimi(AbstractGenBip):
     """
         Class implementing the Havel-Hakimi model, modified to generate
         bipartite graphs.
+        This implementation includes a method to run a fixed number of edge swap after generation, to get a 
+        uniform sample from the set of graph with given degree sequences.
     """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     def random_swaps(self, bip):
+        """
+           Run an implementation of random edge swap in Cython. 
+           Implementation can be found in share/edge_swapper.cpp,
+           with cython translation in edge_swapper.pyx.
+            
+        """
         n_swap = 0
         n_edges = bip.m
         N_swap = 10* n_edges
-        #N_swap = n_edges
-        #for edge in multiple_edges:
-        #accepted = False
         self.logger.debug(f'{N_swap} swaps needed')
+
+        # run C++ random swaps
         rdm_swapper = pyRandomSwapper(bip.top_vector, bip.bot_vector, bip.top_index, bip.top_degree)
-        bip.bot_vector = rdm_swapper.pyRandom_swaps(N_swap)
-        #t0 = time.time()
-        #while n_swap < N_swap:
-        #    #edge = np.random.choice(n_edges)
-        #    #other_edge = np.random.choice(n_edges)
-        #    #(edge, other_edge) = np.random.choice(n_edges, size=(2,), replace=True)
-        #    (edge, other_edge) = np.random.randint(low=0, high=n_edges, size=(2,))
-
-        #    if other_edge == edge:
-        #        continue
-        #    if n_swap % 1000000 == 0:
-        #        self.logger.info(f'{n_swap} / {N_swap} done')
-        #    # check if multiple edge
-        #    new_edge1 = (bip.top_vector[edge], bip.bot_vector[other_edge])
-        #    new_edge2 = (bip.top_vector[other_edge], bip.bot_vector[edge])
-        #    #if new_edge1 in anomaly_edges or new_edge2 in anomaly_edges: 
-        #    #    continue
-
-        #    if not (bip.link_exists(bip.top_vector[edge], bip.bot_vector[other_edge]) or bip.link_exists(bip.top_vector[other_edge], bip.bot_vector[edge])):
-        #        n_swap += 1
-        #        edge1 =  (bip.top_vector[edge], bip.bot_vector[edge])
-        #        edge2 =  (bip.top_vector[other_edge], bip.bot_vector[other_edge])
-        #        bip.swap(edge,other_edge)
-        #t1 = time.time()
-
+        bot_vector = rdm_swapper.pyRandom_swaps(N_swap)
+        #bip.bot_vector = bot_vector #rdm_swapper.pyRandom_swaps(N_swap)
+        return bot_vector
 
     def run(self, bip):
+        """
+           Run Havel Hakimi for bipartite graphs, then run random swaps to get uniform samples. 
+           Random swap implementation can be found in share/edge_swapper.cpp,
+           with cython translation in edge_swapper.pyx
+        """
         # Re-order top nodes by decreasing degree
         bip.reorder_top_decreasing_degree()
         # Re-order bot nodes by decreasing degree
@@ -245,5 +234,7 @@ class GenBipHavelHakimi(AbstractGenBip):
                 sorted_bot[bot_deg_pos[bot_deg[v]]] = v
                 bot_deg_pos[bot_deg[v]] += 1
                 bot_deg[v] -= 1
-        self.random_swaps(bip)
+
+        # generation is done, run random swaps
+        bot_vector = self.random_swaps(bip)
 

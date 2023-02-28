@@ -60,16 +60,24 @@ namespace swapper {
             if (n_swap %1000000 == 0){
                 std::cout << n_swap << " done\n"; 
             }
+
+            // pick random edge
             int64_t edge = rand() % n_edges;
             int64_t other_edge = rand() % n_edges;
+
+            // skip case where both random edges are equal
             if (edge == other_edge) {
                 continue;
             }
+
+            // edge1 and edge2 are the selected edges, new_edge1 and new_edge2 are the new edges after the swap.
             std::pair<int64_t,int64_t> edge1 = std::make_pair(edge, bot_vector[edge]);
             std::pair<int64_t,int64_t> edge2 = std::make_pair(other_edge, bot_vector[other_edge]);
 
             std::pair<int64_t,int64_t> new_edge1 = std::make_pair(top_vector[edge], bot_vector[other_edge]);
             std::pair<int64_t,int64_t> new_edge2 = std::make_pair(top_vector[other_edge], bot_vector[edge]);
+
+            // only perform swap if new edges don't already exist
             bool ne1_exists =  link_exists(new_edge1);
             bool ne2_exists =  link_exists(new_edge2);
 
