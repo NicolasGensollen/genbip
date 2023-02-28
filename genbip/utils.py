@@ -1,4 +1,3 @@
-import ipdb
 import numpy as np
 
 
@@ -103,7 +102,6 @@ def check_multiple(normal_bip, anomaly_bip, mappers):
     def _compare_neighbours(bip, u, other_bip, other_u, top_mapper, bot_mapper):
         """given a node u present in two bip, compare their neighbours"""
         common_neighbours = []
-        #ipdb.set_trace()
         for v_idx, v in enumerate(bip.bot_vector[bip.top_index[u]: bip.top_index[u] + bip.top_degree[u]]):
 
             # check if bot node exist in other bip
@@ -112,11 +110,9 @@ def check_multiple(normal_bip, anomaly_bip, mappers):
 
             # get corresponding v in other bip - TODO might do mapping..?
             #other_v = np.where(other_bip.bot_names == bip.bot_names[v])[0][0]
-            #ipdb.set_trace()
             try:
                 other_v = bot_mapper[v]
             except:
-                #ipdb.set_trace()
                 #other_v = bot_mapper[v]
                 continue
             # check if other_v is a neighbour of other_u
@@ -137,7 +133,6 @@ def check_multiple(normal_bip, anomaly_bip, mappers):
     #print('multiple edges check')
     #print(normal_bip)
     #print(anomaly_bip)
-    #ipdb.set_trace()
     for u_an, u_anName in enumerate(anomaly_bip.top_names):
         #u_anIdx = anomaly_bip.top_names.index(u)
         _u_norm = np.where(normal_bip.top_names == u_anName)[0]#[0]

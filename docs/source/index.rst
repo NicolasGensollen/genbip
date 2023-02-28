@@ -3,18 +3,16 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to genbip's documentation!
-==================================
+genbip's documentation!
+=======================
+
+* The Genbip package can generate bipartite graph given 
+  bottom and top node degree lists.
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   installation
+   cli
+   python/index

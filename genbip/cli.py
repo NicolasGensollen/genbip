@@ -2,7 +2,6 @@ import random
 import click
 from collections import Counter
 import numpy as np
-import ipdb
 
 from genbip.bip import bip
 from genbip.generators import GenBipConfiguration, GenBipPrunedConfiguration, GenBipRepeatedConfigurationWhole, GenBipRepeatedConfigurationAsap, GenBipCorrectedConfiguration, GenBipHavelHakimi
@@ -33,7 +32,6 @@ def cli(top, bot, gen, seed, n_anomaly, m_anomaly, swaps, out):
     bip_instance = bip.from_files(top, bot)
     print('adding anomaly to stream')
     anomaly_edges = anomalyGenerator.select_nodes_anomaly(an_bip, bip_instance, edges)
-    #ipdb.set_trace()
 
 
 

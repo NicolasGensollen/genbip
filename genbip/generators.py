@@ -1,19 +1,25 @@
 """
     Implement bipartite graph generator using different models.
     Available models:
-        - configuration model: pick all edges at random to fit node degrees.
-                               can give multiple edges.
-        - pruned configuration model: Configuration model but remove multiple
-                               edges. 
-        - repeated configuration whole: Run a complete configuration model 
-                               until a simple graph is picked.
-        - repeated configuration asap: Run a configuration model but stop it
-                               as soon as a multiple edge is picked.
-        - corrected configuration model: Run a configuration model but 
-                               when a multiple edge is picked, perform random
-                               swaps until there a no multiple edges
-        - Havel-Hakimi model: Run a modified Havel Hakimi to generate
-                              a bipartite graph.
+        - configuration model: 
+                pick all edges at random to fit node degrees.
+                can give multiple edges.
+        - pruned configuration model: 
+                Configuration model but remove multiple
+                edges. 
+        - repeated configuration whole: 
+                Run a complete configuration model 
+                until a simple graph is picked.
+        - repeated configuration asap: 
+                Run a configuration model but stop it
+                as soon as a multiple edge is picked.
+        - corrected configuration model: 
+                Run a configuration model but 
+                when a multiple edge is picked, perform random
+                swaps until there a no multiple edges
+        - Havel-Hakimi model: 
+                Run a modified Havel Hakimi to generate
+                a bipartite graph.
 """
 from edge_swapper import *
 
@@ -119,7 +125,7 @@ class GenBipRepeatedConfigurationAsap(AbstractGenBip):
         neighbors_array = np.zeros(bip.n_bot, dtype=np.int64)
         rounds = 0
         multi = True
-        while multi:
+        while (multi or rounds < 1000):
             multi = False
             for v in range(bip.n_top):
                 last_i = bip.top_index[v] + bip.top_degree[v]

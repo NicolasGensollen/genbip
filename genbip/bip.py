@@ -33,7 +33,6 @@ contains the edges:
 >>> b - gamma
 
 """
-import ipdb
 import gzip
 import random
 import numpy as np
