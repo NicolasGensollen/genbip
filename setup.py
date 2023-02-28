@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from codecs import open
+import numpy
 import os
 from setuptools import setup, find_packages, Extension
 from glob import glob
@@ -27,7 +28,8 @@ with open(os.path.join(filepath, "genbip", "__version__.py"), "r", "utf-8") as f
 extensions = [Extension('edge_swapper',
                         ['genbip/edge_swapper.pyx'],
                          extra_compile_args=["-std=c++11"],
-                         extra_link_args=["-std=c++11"]
+                         extra_link_args=["-std=c++11"],
+                         include_dirs=[numpy.get_include()]
                          )]
 
 
